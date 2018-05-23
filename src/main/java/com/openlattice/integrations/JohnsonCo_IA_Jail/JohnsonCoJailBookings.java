@@ -56,8 +56,8 @@ public class JohnsonCoJailBookings {
 //        final String password = args[ 1 ];                                            //for running on Atlas
 //        final String jwtToken = MissionControl.getIdToken( username, password );      //for running on Atlas
 //        final String integrationFile = args[ 2 ];                                     //for running on Atlas
-        final String jwtToken = args[ 0 ];
-        final String integrationFile = args[ 1 ];
+        final String jwtToken = args[ 0 ];                                         //for running locally
+        final String integrationFile = args[ 1 ];                                  //for running locally
 
         HikariDataSource hds =
                 ObjectMappers.getYamlMapper()
@@ -101,7 +101,9 @@ public class JohnsonCoJailBookings {
 
                 //PEOPLE - 2 entity sets, inmates and officers
                 .addEntity( "inmateperson" )
-                .to( "JCInmate" )
+//                .to( "JCInmate" )
+                .to( "IowaCityPeople2" )   //temporary hack to integrate jail people into CAD people dataset
+                .useCurrentSync()
                     .addProperty( "justice.xref", "MNI_No" )
                     .addProperty( "nc.SubjectIdentification", "MNI_No" )
                     .addProperty( "nc.PersonGivenName" )
@@ -157,8 +159,8 @@ public class JohnsonCoJailBookings {
                     .useCurrentSync()
                     .addProperty( "criminaljustice.personid", "MNI_No" )
                     .addProperty( "im.PersonNickName", "Alias" )
-                    .addProperty( "nc.PersonWeightMeasure" ).value( row -> Parsers.parseInt( row.getAs( "OWeight" ) ) ).ok()
-                    .addProperty( "nc.PersonHeightMeasure" ).value( row -> Parsers.parseInt( row.getAs( "OHeight" ) ) ).ok()
+                    .addProperty( "nc.PersonWeightMeasure" ).value(  row -> getInt( row.getAs("OWeight" )) ).ok()
+                    .addProperty( "nc.PersonHeightMeasure" ).value( row -> getInt( row.getAs( "OHeight" ) ) ).ok()
                     .addProperty( "nc.PersonEyeColorText", "OEyes" )
                     .addProperty( "nc.PersonHairColorText", "OHair" )
                     .addProperty( "person.stateidnumber", "MNI_No" )
@@ -212,36 +214,36 @@ public class JohnsonCoJailBookings {
                     .addProperty( "publicsafety.ssa", "SSA" )
                     .addProperty( "publicsafety.ssaconviction" )
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "SSA_Conviction" ) ) ).ok()
-                    .addProperty( "place.originatingagencyidentifier", "ORI" )
+                    .addProperty( "place.OriginatingAgencyIdentifier", "ORI" )
                     .addProperty( "general.status", "Status" )
                     .addProperty( "event.comments", "Remarks" )
                     .addProperty( "criminaljustice.arrestagency", "Arresting_Agency" )
                     .addProperty( "criminaljustice.bailbondamount", "Bond" )
                     .addProperty( "criminaljustice.timeserveddays" )
-                        .value( row -> Parsers.parseInt( row.getAs( "TSrvdDays" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "TSrvdDays" ) ) ).ok()
                     .addProperty( "ol.timeservedhours", "TSrvdHrs" )
                     .addProperty( "ol.timeservedminutes", "TSrvdMins" )
-                    .addProperty( "publicsafety.reasonheld", "ReasonHeld" )
+                    .addProperty( "publicsafety.ReasonHeld", "ReasonHeld" )
                     .addProperty( "publicsafety.GoodTimeDays" )
-                        .value( row -> Parsers.parseInt( row.getAs( "GTDays" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "GTDays" ) ) ).ok()
                     .addProperty( "publicsafety.GoodTimeHours" )
-                        .value( row -> Parsers.parseInt( row.getAs( "GTHrs" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "GTHrs" ) ) ).ok()
                     .addProperty( "publicsafety.GoodTimeMinutes" )
-                        .value( row -> Parsers.parseInt( row.getAs( "GTMins" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "GTMins" ) ) ).ok()
                     .addProperty( "publicsafety.GoodTimePCT" )
-                        .value( row -> Parsers.parseInt( row.getAs( "GTPct" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "GTPct" ) ) ).ok()
                 .endEntity()
                 .addEntity( "sentence" )                           //ADD SOME OFFENSE INFO? O RESULTS IN S?
                     .to( "JCSentences" )
                     .addProperty( "publicsafety.SentenceTermDays" )
-                        .value( row -> Parsers.parseInt( row.getAs( "SentenceDays" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "SentenceDays" ) ) ).ok()
                     .addProperty( "publicsafety.SentenceTermHours" )
-                        .value( row -> Parsers.parseInt( row.getAs( "SentenceHrs" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "SentenceHrs" ) ) ).ok()
                     .addProperty( "publicsafety.Concurrent", "Concurrent" )
                     .addProperty( "j.SentenceModificationProbationIndicator" )
-                        .value( row -> Parsers.parseInt( row.getAs( "Probation" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "Probation" ) ) ).ok()
                     .addProperty( "publicsafety.ConsecWith" )
-                        .value( row -> Parsers.parseInt( row.getAs( "ConsecWith" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "ConsecWith" ) ) ).ok()
                     .addProperty( "publicsafety.AlternateStartDate" )
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "Alt_Start_Date" ) ) ).ok()
                 .endEntity()
@@ -363,7 +365,7 @@ public class JohnsonCoJailBookings {
                     .addProperty( "general.stringid" )
                         .value( row -> Parsers.getAsString( row.getAs( "MNI_No" )  + Parsers.getAsString( row.getAs( "Charge" ) )) ).ok()
                     .addProperty( "ol.numberofcounts" )
-                        .value( row -> Parsers.parseInt( row.getAs( "NoCounts" ) ) ).ok()
+                        .value( row -> getInt( row.getAs( "NoCounts" ) ) ).ok()
                     .addProperty( "event.ChargeLevelState", "Severity" )
                     .addProperty( "event.ChargeLevel" ).value( JohnsonCoJailBookings::chargeLevel ).ok()
                     .addProperty( "publicsafety.agencyname", "Charging_Agency" )
@@ -571,6 +573,19 @@ public class JohnsonCoJailBookings {
             return "Jail";
         }
         return null;
+    }
+
+    //there are several entries of "0.0" in fields that should be integers
+    public static Integer getInt (Object obj) {
+        String input = getAsString( obj );
+
+        if (input.equals( "0.0" )) {
+            return 0;
+        }
+            else if (StringUtils.isNotBlank( input )) {
+            return Integer.parseInt ( input );
+        }
+            return null;
     }
 
 }
