@@ -3,13 +3,11 @@ package com.openlattice.integrations.JohnsonCo_IA_Jail;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -42,7 +40,7 @@ public class JohnsonCoJailBookings {
     private static final Logger logger = LoggerFactory
             .getLogger( JohnsonCoJailBookings.class );
 
-    private static final Environment environment = Environment.LOCAL;
+    private static final Environment environment = Environment.PRODUCTION;
 
     private static final JavaDateTimeHelper dHelper = new JavaDateTimeHelper( TimeZones.America_Chicago,
             "MM/dd/yyyy", "dd-MMM-YY", "M/d/yyyy", "yyyy-MM-dd" );
@@ -57,43 +55,44 @@ public class JohnsonCoJailBookings {
 //        final String jwtToken = MissionControl.getIdToken( username, password );      //for running on Atlas
 //        final String integrationFile = args[ 2 ];                                     //for running on Atlas
         final String jwtToken = args[ 0 ];                                         //for running locally
-        final String integrationFile = args[ 1 ];                                  //for running locally
+//        final String integrationFile = args[ 1 ];                                  //for running locally
+//
+//        HikariDataSource hds =
+//                ObjectMappers.getYamlMapper()
+//                        .readValue( new File( integrationFile ), IntegrationConfig.class )
+//                        .getHikariDatasource( "jciowa" );
+//
+//        Payload payload = new JdbcPayload( hds,
+//                "SELECT jc_jail_records_ol.\"Arrest_No\", jc_jail_records.\"MNI_No\", jc_jail_records.\"JName\", jc_jail_records.\"Alias\", "
+//                        + "jc_jail_records.\"Date_In\", jc_jail_records.\"Date_Out\", jc_jail_records.\"AO\", jc_jail_records.\"AO_ID\", "
+//                        + "jc_jail_records.\"DOB\",  jc_jail_records.\"Age\", jc_jail_records.\"How_Rel\", jc_jail_records.\"Rel_Officer\", "
+//                        + "jc_jail_records.\"Rel_Officer_ID\", jc_jail_records.\"Caution\",  jc_jail_records.\"Search_Officer\", "
+//                        + "jc_jail_records.\"Search_Officer_ID\", jc_jail_records.\"Est_Rel_Date\", jc_jail_records.\"Released_To\", "
+//                        + "jc_jail_records.\"Remarks\", jc_jail_records.\"Comit_Auth\", jc_jail_records.\"Held_At\", jc_jail_records.\"Adult_Juv_Waive\", "
+//                        + "jc_jail_records.\"Juv_Hold_Auth\", jc_jail_records.\"Person_Post\", jc_jail_records.\"Arrest_Agency\", jc_jail_records.\"Sex\", "
+//                        + "jc_jail_records.\"Race\", jc_jail_records.\"SSA\", jc_jail_records.\"SSA_Conviction\", jc_jail_records.\"SSA_Status\", "
+//                        + "jc_jail_records.\"ORI\", jc_jail_records.\"Status\", jc_jail_records.\"ReasonCode\", jc_jail_records.\"Arrest_Date\", "
+//                        + "jc_jail_records.\"OHeight\", jc_jail_records.\"OWeight\", jc_jail_records.\"OEyes\", jc_jail_records.\"OHair\", "
+//                        + "jc_jail_records.\"Transp_Agency\", jc_jail_records.\"Transp_Officer\", jc_jail_records.\"Transp_Officer_ID\", "
+//                        + "jc_jail_records.\"BookedID\", jc_jail_records.\"PBT\", jc_jail_records.\"Intox\", jc_jail_records.\"ReleaseNotes\", "
+//                        + "jc_jail_records.\"JailRecordId\", jc_jail_records.\"ArrestOfficerID\", jc_jail_record_offense.\"Charge\", "
+//                        + "jc_jail_record_offense.\"Court\", jc_jail_record_offense.\"Bond\",jc_jail_record_offense.\"State\", jc_jail_record_offense.\"Local\", "
+//                        + "jc_jail_record_offense.\"Off_Date\", jc_jail_record_offense.\"TSrvdDays\",jc_jail_record_offense.\"TSrvdHrs\", "
+//                        + "jc_jail_record_offense.\"TSrvdMins\", jc_jail_record_offense.\"Start_Date\", jc_jail_record_offense.\"Release_Date\","
+//                        + "jc_jail_record_offense.\"Arresting_Agency\", jc_jail_record_offense.\"Charging_Agency\", jc_jail_record_offense.\"How_Rel2\", "
+//                        + "jc_jail_record_offense.\"Concurrent\",jc_jail_record_offense.\"Exp_Release_Date\", jc_jail_record_offense.\"Probation\", "
+//                        + "jc_jail_record_offense.\"NoCounts\", jc_jail_record_offense.\"SentenceDays\",jc_jail_record_offense.\"SentenceHrs\", "
+//                        + "jc_jail_record_offense.\"GTDays\", jc_jail_record_offense.\"GTHrs\", jc_jail_record_offense.\"GTMins\",jc_jail_record_offense.\"GTPct\", "
+//                        + "jc_jail_record_offense.\"Alt_Start_Date\", jc_jail_record_offense.\"ConsecWith\", jc_jail_record_offense.\"Notes\","
+//                        + "jc_jail_record_offense.\"ReasonHeld\", jc_jail_record_offense.\"SexOff\", jc_jail_record_offense.\"Severity\", jc_jail_record_offense.\"NCIC\", "
+//                        + "jc_jail_record_offense.\"EntryDate\"   from jc_jail_records FULL OUTER JOIN jc_jail_record_offense ON "
+//                        + "jc_jail_records.\"Jail_ID\" = jc_jail_record_offense.\"Jail_ID\" ");
+//
+//        logger.info( "Using the following idToken: Bearer {}", jwtToken );
 
-        HikariDataSource hds =
-                ObjectMappers.getYamlMapper()
-                        .readValue( new File( integrationFile ), IntegrationConfig.class )
-                        .getHikariDatasource( "jciowa" );
-
-        Payload payload = new JdbcPayload( hds,
-                "SELECT jc_jail_records_ol.\"Arrest_No\", jc_jail_records.\"MNI_No\", jc_jail_records.\"JName\", jc_jail_records.\"Alias\", "
-                        + "jc_jail_records.\"Date_In\", jc_jail_records.\"Date_Out\", jc_jail_records.\"AO\", jc_jail_records.\"AO_ID\", "
-                        + "jc_jail_records.\"DOB\",  jc_jail_records.\"Age\", jc_jail_records.\"How_Rel\", jc_jail_records.\"Rel_Officer\", "
-                        + "jc_jail_records.\"Rel_Officer_ID\", jc_jail_records.\"Caution\",  jc_jail_records.\"Search_Officer\", "
-                        + "jc_jail_records.\"Search_Officer_ID\", jc_jail_records.\"Est_Rel_Date\", jc_jail_records.\"Released_To\", "
-                        + "jc_jail_records.\"Remarks\", jc_jail_records.\"Comit_Auth\", jc_jail_records.\"Held_At\", jc_jail_records.\"Adult_Juv_Waive\", "
-                        + "jc_jail_records.\"Juv_Hold_Auth\", jc_jail_records.\"Person_Post\", jc_jail_records.\"Arrest_Agency\", jc_jail_records.\"Sex\", "
-                        + "jc_jail_records.\"Race\", jc_jail_records.\"SSA\", jc_jail_records.\"SSA_Conviction\", jc_jail_records.\"SSA_Status\", "
-                        + "jc_jail_records.\"ORI\", jc_jail_records.\"Status\", jc_jail_records.\"ReasonCode\", jc_jail_records.\"Arrest_Date\", "
-                        + "jc_jail_records.\"OHeight\", jc_jail_records.\"OWeight\", jc_jail_records.\"OEyes\", jc_jail_records.\"OHair\", "
-                        + "jc_jail_records.\"Transp_Agency\", jc_jail_records.\"Transp_Officer\", jc_jail_records.\"Transp_Officer_ID\", "
-                        + "jc_jail_records.\"BookedID\", jc_jail_records.\"PBT\", jc_jail_records.\"Intox\", jc_jail_records.\"ReleaseNotes\", "
-                        + "jc_jail_records.\"JailRecordId\", jc_jail_records.\"ArrestOfficerID\", jc_jail_record_offense.\"Charge\", "
-                        + "jc_jail_record_offense.\"Court\", jc_jail_record_offense.\"Bond\",jc_jail_record_offense.\"State\", jc_jail_record_offense.\"Local\", "
-                        + "jc_jail_record_offense.\"Off_Date\", jc_jail_record_offense.\"TSrvdDays\",jc_jail_record_offense.\"TSrvdHrs\", "
-                        + "jc_jail_record_offense.\"TSrvdMins\", jc_jail_record_offense.\"Start_Date\", jc_jail_record_offense.\"Release_Date\","
-                        + "jc_jail_record_offense.\"Arresting_Agency\", jc_jail_record_offense.\"Charging_Agency\", jc_jail_record_offense.\"How_Rel2\", "
-                        + "jc_jail_record_offense.\"Concurrent\",jc_jail_record_offense.\"Exp_Release_Date\", jc_jail_record_offense.\"Probation\", "
-                        + "jc_jail_record_offense.\"NoCounts\", jc_jail_record_offense.\"SentenceDays\",jc_jail_record_offense.\"SentenceHrs\", "
-                        + "jc_jail_record_offense.\"GTDays\", jc_jail_record_offense.\"GTHrs\", jc_jail_record_offense.\"GTMins\",jc_jail_record_offense.\"GTPct\", "
-                        + "jc_jail_record_offense.\"Alt_Start_Date\", jc_jail_record_offense.\"ConsecWith\", jc_jail_record_offense.\"Notes\","
-                        + "jc_jail_record_offense.\"ReasonHeld\", jc_jail_record_offense.\"SexOff\", jc_jail_record_offense.\"Severity\", jc_jail_record_offense.\"NCIC\", "
-                        + "jc_jail_record_offense.\"EntryDate\"   from jc_jail_records FULL OUTER JOIN jc_jail_record_offense ON "
-                        + "jc_jail_records.\"Jail_ID\" = jc_jail_record_offense.\"Jail_ID\" ");
-
-        logger.info( "Using the following idToken: Bearer {}", jwtToken );
-
-        //        final String jailPath = args[ 0 ];
-//        SimplePayload payload = new SimplePayload( jailPath );
+        final String jailPath = args[ 1 ];
+        System.out.println(jailPath);
+        SimplePayload payload = new SimplePayload( jailPath );
 
         //formatter:off
         Flight jailflight = Flight.newFlight()
@@ -101,12 +100,10 @@ public class JohnsonCoJailBookings {
 
                 //PEOPLE - 2 entity sets, inmates and officers
                 .addEntity( "inmateperson" )
-//                .to( "JCInmate" )
-//                .to( "IowaCityPeople2" )   //temporary hack to integrate jail people into CAD people dataset
-                  .to( "SocratesJCInmates" )
-                .useCurrentSync()
+                  .to( "SocratesJCPeople" )
+//                .useCurrentSync()
                     .addProperty( "justice.xref", "MNI_No" )
-                    .addProperty( "nc.SubjectIdentification", "MNI_No" )
+                    .addProperty( "nc.SubjectIdentification","openlatticeid")
                     .addProperty( "nc.PersonGivenName" )
                         .value( row -> getFirstName( row.getAs( "JName" ) ) ).ok()
                     .addProperty( "nc.PersonMiddleName" )
@@ -120,7 +117,6 @@ public class JohnsonCoJailBookings {
                         .value( row -> standardRace( row.getAs( "Race" ) ) ).ok()
                 .endEntity()
                 .addEntity( "Aofficerperson" )
-//                    .to( "JCOfficers" )
                     .to( "SocratesJCOfficers" )
                     .addProperty( "nc.PersonGivenName" )
                         .value( row -> getFirstName( row.getAs( "AO" ) ) ).ok()
@@ -130,7 +126,6 @@ public class JohnsonCoJailBookings {
                         .value( JohnsonCoJailBookings::getAOfficerID ).ok()      //cannot just use AO_ID because the integration will collapse everyone with a blank ID into 1 person.
                 .endEntity()
                 .addEntity( "Rofficerperson" )
-//                    .to( "JCOfficers" )
                     .to( "SocratesJCOfficers" )
                     .addProperty( "nc.PersonGivenName" )
                         .value( row -> getFirstName( row.getAs( "Rel_Officer" ) ) ).ok()
@@ -139,7 +134,6 @@ public class JohnsonCoJailBookings {
                     .addProperty( "nc.SubjectIdentification", "Rel_Officer_ID" )
                 .endEntity()
                 .addEntity( "Sofficerperson" )
-//                    .to( "JCOfficers" )
                     .to( "SocratesJCOfficers" )
                     .addProperty( "nc.PersonGivenName" )
                         .value( row -> getFirstName( row.getAs( "Search_Officer" ) ) ).ok()
@@ -148,7 +142,6 @@ public class JohnsonCoJailBookings {
                     .addProperty( "nc.SubjectIdentification", "Search_Officer_ID" )
                 .endEntity()
                 .addEntity( "Tofficerperson" )
-//                    .to( "JCOfficers" )
                     .to( "SocratesJCOfficers" )
                     .addProperty( "nc.PersonGivenName" )
                         .value( row -> getFirstName( row.getAs( "Transp_Officer" ) ) ).ok()
@@ -160,8 +153,7 @@ public class JohnsonCoJailBookings {
 
                 //OTHER PERSONAL INFO - 2 entity sets, for inamtes and officers
                 .addEntity( "JIinfo" )
-//                    .to( "JCJIPersonInfo" )
-                    .to( "SocratesJCIPersonInfo" )
+                    .to( "SocratesJCJIPersonInfo" )
                     .useCurrentSync()
                     .addProperty( "criminaljustice.personid", "MNI_No" )
                     .addProperty( "im.PersonNickName", "Alias" )
@@ -174,24 +166,20 @@ public class JohnsonCoJailBookings {
                     .addProperty( "j.SentenceRegisterSexOffenderIndicator", "SexOff" )
                 .endEntity()
                 .addEntity( "Aofficers" )
-//                    .to( "JCOfficerInfo" )
                     .to( "SocratesJCJIPersonnel" )
                     .addProperty( "publicsafety.personnelid" )
                         .value( JohnsonCoJailBookings::getAOfficerID ).ok()      //cannot just use AO_ID because the integration will collapse everyone with a blank ID into 1 person.
                     .addProperty( "publicsafety.agencyname", "Arrest_Agency" )
                 .endEntity()
                 .addEntity( "Rofficers" )
-//                    .to( "JCOfficerInfo" )
                     .to( "SocratesJCJIPersonnel" )
                     .addProperty( "publicsafety.personnelid","Rel_Officer_ID" ) //checked, no blanks where there is a rel officer name
                 .endEntity()
                 .addEntity( "Sofficers" )
-//                    .to( "JCOfficerInfo" )
                     .to( "SocratesJCJIPersonnel" )
                     .addProperty( "publicsafety.personnelid", "Search_Officer_ID" ) //checked, no blanks where there is a search officer name
                 .endEntity()
                 .addEntity( "Tofficers" )
-//                    .to( "JCOfficerInfo" )
                     .to( "SocratesJCJIPersonnel" )
                     .addProperty( "publicsafety.personnelid" )
                          .value( JohnsonCoJailBookings::getTOfficerID ).ok()      //cannot just use AO_ID because the integration will collapse everyone with a blank ID into 1 person.
@@ -201,7 +189,6 @@ public class JohnsonCoJailBookings {
                 //other entity sets
                 .addEntity( "jailstay" )
                     .to( "SocratesJCJailStay" )
-//                    .to( "JCJailStay" )
                     .addProperty( "criminaljustice.jailrecordid")
                         .value( JohnsonCoJailBookings::getJailstayId ).ok()
 //                    .addProperty( "criminaljustice.inmateid", "MNI_No" )
@@ -225,7 +212,7 @@ public class JohnsonCoJailBookings {
                     .addProperty( "publicsafety.ssa", "SSA" )
                     .addProperty( "publicsafety.ssaconviction" )
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "SSA_Conviction" ) ) ).ok()
-                    .addProperty( "place.originatingagencyidentifier", "ORI" )
+                    .addProperty( "place.OriginatingAgencyIdentifier", "ORI" )
                     .addProperty( "general.status", "Status" )
                     .addProperty( "event.comments", "Remarks" )
                     .addProperty( "criminaljustice.arrestagency", "Arresting_Agency" )
@@ -234,7 +221,7 @@ public class JohnsonCoJailBookings {
                         .value( row -> getInt( row.getAs( "TSrvdDays" ) ) ).ok()
                     .addProperty( "ol.timeservedhours", "TSrvdHrs" )
                     .addProperty( "ol.timeservedminutes", "TSrvdMins" )
-                    .addProperty( "publicsafety.reasonheld", "ReasonHeld" )
+                    .addProperty( "publicsafety.ReasonHeld", "ReasonHeld" )
                     .addProperty( "publicsafety.GoodTimeDays" )
                         .value( row -> getInt( row.getAs( "GTDays" ) ) ).ok()
                     .addProperty( "publicsafety.GoodTimeHours" )
@@ -245,7 +232,6 @@ public class JohnsonCoJailBookings {
                         .value( row -> getInt( row.getAs( "GTPct" ) ) ).ok()
                 .endEntity()
                 .addEntity( "sentence" )                           //ADD SOME OFFENSE INFO? O RESULTS IN S?
-//                    .to( "JCSentences" )
                     .to( "SocratesJCSentences" )
                     .addProperty( "publicsafety.SentenceTermDays" )
                         .value( row -> getInt( row.getAs( "SentenceDays" ) ) ).ok()
@@ -260,7 +246,6 @@ public class JohnsonCoJailBookings {
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "Alt_Start_Date" ) ) ).ok()
                 .endEntity()
                 .addEntity( "offense" )
-//                    .to( "JCOffenses" )
                     .to( "SocratesJCOffenses" )
                     .addProperty( "criminaljustice.offenseid", "State" )     //using the state Charge code as unique ID.
                     .addProperty( "j.ArrestCharge", "Charge" )
@@ -272,13 +257,11 @@ public class JohnsonCoJailBookings {
                     .addProperty( "event.comments", "Notes" )
                 .endEntity()
                 .addEntity( "court" )
-//                    .to( "JCCourt" )
                     .to( "SocratesJCCourt" )
                     .entityIdGenerator( row ->  row.get( "Court" ))
                     .addProperty( "location.name", "Court" )
                 .endEntity()
                 .addEntity( "facility" )
-//                    .to("JCFacility")
                     .to("SocratesJCFacility")
                     .addProperty( "general.stringid")
                         .value( JohnsonCoJailBookings::getFacility ).ok()
@@ -290,8 +273,7 @@ public class JohnsonCoJailBookings {
                 .createAssociations()
 
                 .addAssociation( "bookedin" )
-//                    .to( "JCBooking" )
-                    .to( "SocratesJCBooking" )
+                    .to( "SocratesJCbooking" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "jailstay" )
                     .entityIdGenerator( row ->  row.get( "BookedID" ) + row.get( "Jail_ID" ) + row.get( "MNI_No" ))
@@ -302,18 +284,16 @@ public class JohnsonCoJailBookings {
                     .addProperty( "event.comments", "Remarks" )
                 .endAssociation()
                 .addAssociation( "is1" )
-//                    .to( "JCis" )
                     .to( "SocratesJCis" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "JIinfo" )
-                    .addProperty( "general.stringid", "MNI_No" )
+                    .addProperty( "general.stringid", "openlatticeid" )
                     .addProperty( "ol.datetimestart" )
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "Date_In" )) ).ok()
                     .addProperty( "incident.enddatetime" )
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "Date_Out" )) ).ok()
                 .endAssociation()
                 .addAssociation( "is2" )
-//                    .to( "JCis" )
                     .to( "SocratesJCis" )
                     .fromEntity( "Aofficerperson" )
                     .toEntity( "Aofficers" )
@@ -321,7 +301,6 @@ public class JohnsonCoJailBookings {
                         .value( JohnsonCoJailBookings::getAOfficerID ).ok()
                 .endAssociation()
                 .addAssociation( "is3" )
-//                    .to( "JCis" )
                     .to( "SocratesJCis" )
                     .fromEntity( "Rofficerperson" )
                     .toEntity( "Rofficers" )
@@ -329,13 +308,11 @@ public class JohnsonCoJailBookings {
                 .endAssociation()
                 .addAssociation( "is4" )
                     .to( "SocratesJCis" )
-//                    .to( "JCis" )
                     .fromEntity( "Sofficerperson" )
                     .toEntity( "Sofficers" )
                     .addProperty( "general.stringid", "Search_Officer_ID" )
                 .endAssociation()
                 .addAssociation( "is5" )
-//                    .to( "JCis" )
                     .to( "SocratesJCis" )
                     .fromEntity( "Tofficerperson" )
                     .toEntity( "Tofficers" )
@@ -343,53 +320,48 @@ public class JohnsonCoJailBookings {
                         .value( JohnsonCoJailBookings::getTOfficerID ).ok()
                 .endAssociation()
                 .addAssociation( "arrestedby" )
-//                    .to( "JCArrestedBy" )
                     .to( "SocratesJCArrestedBy" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "Aofficers" )
                     .addProperty( "general.StringID" )
-                        .value( row -> row.getAs( "MNI_No" ) + getAOfficerID( row ) ).ok()
+                        .value( row -> row.getAs( "openlatticeid" ) + getAOfficerID( row ) ).ok()
                     .addProperty( "publicsafety.ArrestID", "Arrest_No" )
                     .addProperty( "ol.arrestdatetime" )
                         .value( row -> dHelper.parseDateAsDateTime( row.getAs( "Arrest_Date" ) ) ).ok()
                 .endAssociation()
                 .addAssociation( "searchedby" )
-//                    .to( "JCSearchedby" )
                     .to( "SocratesJCSearchedby" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "Sofficers" )
                     .addProperty( "general.StringID" )
                         .value( row -> {
                             return Parsers.getAsString(row.getAs( "Search_Officer_ID" )) +
-                                    Parsers.getAsString( row.getAs( "MNI_No" ));
+                                    Parsers.getAsString( row.getAs( "openlatticeid" ));
                         } ).ok()
                 .endAssociation()
                 .addAssociation( "releasedby" )
-//                    .to( "JCReleasedby" )
                     .to( "SocratesJCReleasedby" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "Rofficers" )
                     .addProperty( "general.StringID" )
                         .value( row -> {
                             return Parsers.getAsString(row.getAs( "Rel_Officer_ID" )) +
-                                    Parsers.getAsString( row.getAs( "MNI_No" ));
+                                    Parsers.getAsString( row.getAs( "openlatticeid" ));
                         } ).ok()
                 .endAssociation()
                 .addAssociation( "transportedby" )
-//                    .to( "JCTransportedby" )
                     .to( "SocratesJCTransportedby" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "Tofficers" )
                     .addProperty( "general.StringID" )
-                        .value( row -> getTOfficerID( row ) + row.getAs( "MNI_No" ) ).ok()
+                        .value( row -> getTOfficerID( row ) + row.getAs( "openlatticeid" ) ).ok()
                 .endAssociation()
                 .addAssociation( "chargedwith" )
-//                    .to( "JCChargedWith" )
                     .to( "SocratesJCChargedWith" )
                     .fromEntity( "inmateperson" )
                     .toEntity( "offense" )
                     .addProperty( "general.stringid" )
-                        .value( row -> Parsers.getAsString( row.getAs( "MNI_No" )  + Parsers.getAsString( row.getAs( "Charge" ) )) ).ok()
+                        .value( row -> Parsers.getAsString( row.getAs( "openlatticeid" )  + Parsers.getAsString( row.getAs( "Charge" ) )) ).ok()
                     .addProperty( "ol.numberofcounts" )
                         .value( row -> getInt( row.getAs( "NoCounts" ) ) ).ok()
                     .addProperty( "event.ChargeLevelState", "Severity" )
@@ -397,7 +369,6 @@ public class JohnsonCoJailBookings {
                     .addProperty( "publicsafety.agencyname", "Charging_Agency" )
                 .endAssociation()
                 .addAssociation( "resultsin1" )
-//                    .to( "JCResultsIn" )
                     .to( "SocratesJCResultsIn" )
                     .fromEntity( "sentence" )
                     .toEntity( "jailstay" )
@@ -407,7 +378,6 @@ public class JohnsonCoJailBookings {
                         dHelper.parseDateAsDateTime( row.getAs( "Alt_Start_Date" ) )).ok()
                 .endAssociation()
                 .addAssociation( "resultsin2" )
-//                    .to( "JCResultsIn" )
                     .to( "SocratesJCResultsIn" )
                     .fromEntity( "offense" )
                     .toEntity( "sentence" )
@@ -415,14 +385,12 @@ public class JohnsonCoJailBookings {
                 .endAssociation()
                 .addAssociation( "occurredat1" )
                     .to( "SocratesJCOccurredAt" )
-//                    .to( "JCOccurredAt" )
                     .fromEntity( "sentence" )
                     .toEntity( "court" )
                     .addProperty( "general.stringid", "Court" )
                 .endAssociation()
                 .addAssociation( "occurredat2" )
                     .to( "SocratesJCOccurredAt" )
-//                    .to( "JCOccurredAt")
                     .fromEntity( "jailstay" )
                     .toEntity( "facility" )
                     .addProperty( "general.stringid")
@@ -433,16 +401,19 @@ public class JohnsonCoJailBookings {
                 .done();
         //formatter:on
 
+        ObjectMapper mapper = ObjectMappers.getYamlMapper();
+        logger.info("This is the JSON for the flight. {}", mapper.writeValueAsString(jailflight));
 
         Shuttle shuttle = new Shuttle( environment, jwtToken );
+//        Map<Flight, Payload> flights = new LinkedHashMap<>( 2 );
         Map<Flight, Payload> flights = new HashMap<>( 1 );
         flights.put( jailflight, payload );
 
         shuttle.launchPayloadFlight( flights );
+
     }
 
     public static String getFirstName( Object obj ) {
-        System.out.println("YAAAAY");
         if ( obj != null ) {
             String name = obj.toString();
             String[] names = name.split( "," );
@@ -606,17 +577,30 @@ public class JohnsonCoJailBookings {
         return null;
     }
 
+    public static String getString (Object obj) {
+        String input = getAsString( obj );
+        if (StringUtils.isNotBlank( input ) ){
+            return input;
+        }
+        return null;
+    }
+
     //there are several entries of "0.0" in fields that should be integers
     public static Integer getInt (Object obj) {
         String input = getAsString( obj );
-
-        if (input.equals( "0.0" )) {
+        if (input == null) {
+            return null;
+        }
+        else if (input.equals( "0.0" )) {
             return 0;
         }
-            else if (StringUtils.isNotBlank( input )) {
-            return Integer.parseInt ( input );
-        }
+        else if (StringUtils.isNotBlank( input )) {
+            if (StringUtils.isNumeric(input)) {
+                return (int) Double.parseDouble( input );
+            }
             return null;
+        }
+        return null;
     }
 
 }
